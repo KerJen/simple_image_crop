@@ -21,6 +21,7 @@ class ImgCrop extends StatefulWidget {
   final double chipRatio;
   final ChipShape chipShape;
   final double handleSize;
+  final double areaRadius;
   const ImgCrop(
       {Key? key,
       required this.image,
@@ -29,10 +30,9 @@ class ImgCrop extends StatefulWidget {
       this.chipRadius = 150,
       this.chipRatio = 1.0,
       this.chipShape = ChipShape.circle,
+      this.areaRadius = 0,
       this.handleSize = 10.0})
-      : assert(image != null),
-        assert(maximumScale != null),
-        assert(handleSize != null && handleSize >= 0.0),
+      : assert(handleSize >= 0.0),
         super(key: key);
 
   ImgCrop.file(File file,
@@ -42,10 +42,10 @@ class ImgCrop extends StatefulWidget {
       this.onImageError,
       this.chipRadius = 150,
       this.chipRatio = 1.0,
+      this.areaRadius = 0,
       this.chipShape = ChipShape.circle,
       this.handleSize = 10.0})
       : image = FileImage(file, scale: scale),
-        assert(maximumScale != null),
         super(key: key);
 
   ImgCrop.asset(String assetName,
@@ -55,11 +55,11 @@ class ImgCrop extends StatefulWidget {
       this.chipRadius = 150,
       this.maximumScale: 2.0,
       this.onImageError,
+      this.areaRadius = 0,
       this.chipRatio = 1.0,
       this.chipShape = ChipShape.circle,
       this.handleSize = 10.0})
       : image = AssetImage(assetName, bundle: bundle, package: package),
-        assert(maximumScale != null),
         super(key: key);
 
   @override
@@ -190,6 +190,7 @@ class ImgCropState extends State<ImgCrop> with TickerProviderStateMixin, Drag {
             active: _activeController.value,
             chipShape: widget.chipShape,
             handleSize: widget.handleSize,
+            areaRadius: widget.areaRadius,
           ),
         ),
       ),
@@ -310,16 +311,16 @@ class ImgCropState extends State<ImgCrop> with TickerProviderStateMixin, Drag {
   void _handleScaleEnd(ScaleEndDetails details) {
     _activate(0);
 
-    final num targetScale = _scale!.clamp(_minimumScale, _maximumScale); //NOTE: 处理缩放边界值
+    final targetScale = _scale!.clamp(_minimumScale, _maximumScale); //NOTE: 处理缩放边界值
     _scaleTween = Tween<double>(
       begin: _scale,
-      end: targetScale as double?,
+      end: targetScale,
     );
 
     _startView = _view;
     _viewTween = RectTween(
       begin: _view,
-      end: _getViewInBoundaries(targetScale as double),
+      end: _getViewInBoundaries(targetScale),
     );
 
     _settleController.value = 0.0;
@@ -373,9 +374,18 @@ class _CropPainter extends CustomPainter {
   final double? active;
   final ChipShape? chipShape;
   final double? handleSize;
+  final double? areaRadius;
 
   _CropPainter(
-      {this.image, this.view, this.ratio, this.area, this.scale, this.active, this.chipShape, this.handleSize});
+      {this.image,
+      this.view,
+      this.ratio,
+      this.area,
+      this.scale,
+      this.active,
+      this.chipShape,
+      this.handleSize,
+      this.areaRadius});
 
   @override
   bool shouldRepaint(_CropPainter oldDelegate) {
@@ -441,7 +451,9 @@ class _CropPainter extends CustomPainter {
     final _path1 = Path()..addRect(Rect.fromLTRB(0.0, 0.0, rect.width, rect.height));
     Path _path2;
     if (chipShape == ChipShape.rect) {
-      _path2 = Path()..addRect(boundaries);
+      _path2 = Path()
+        ..addRRect(RRect.fromLTRBR(
+            boundaries.left, boundaries.top, boundaries.right, boundaries.bottom, Radius.circular(areaRadius!)));
     } else {
       _path2 = Path()
         ..addRRect(RRect.fromLTRBR(boundaries.left, boundaries.top, boundaries.right, boundaries.bottom,
@@ -455,8 +467,10 @@ class _CropPainter extends CustomPainter {
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
     if (chipShape == ChipShape.rect) {
-      canvas.drawRect(
-          Rect.fromLTRB(boundaries.left - 1, boundaries.top - 1, boundaries.right + 1, boundaries.bottom + 1), paint);
+      canvas.drawRRect(
+          RRect.fromLTRBR(boundaries.left - 1, boundaries.top - 1, boundaries.right + 1, boundaries.bottom + 1,
+              Radius.circular(areaRadius!)),
+          paint);
     } else {
       canvas.drawRRect(
           RRect.fromLTRBR(boundaries.left - 1, boundaries.top - 1, boundaries.right + 1, boundaries.bottom + 1,
