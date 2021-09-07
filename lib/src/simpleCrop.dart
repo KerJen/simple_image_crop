@@ -456,9 +456,8 @@ class _CropPainter extends CustomPainter {
       canvas.restore();
     }
 
-    if (showBorder)
-      paint.color = Color.fromRGBO(
-          0x0, 0x0, 0x0, _kCropOverlayActiveOpacity * active! + _kCropOverlayInactiveOpacity * (1.0 - active!));
+    paint.color = Color.fromRGBO(
+        0x0, 0x0, 0x0, _kCropOverlayActiveOpacity * active! + _kCropOverlayInactiveOpacity * (1.0 - active!));
     final boundaries = currentBoundaries(size);
     final _path1 = Path()..addRect(Rect.fromLTRB(0.0, 0.0, rect.width, rect.height));
     Path _path2;
@@ -480,10 +479,6 @@ class _CropPainter extends CustomPainter {
         ..color = Colors.white
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke;
-    } else {
-      paint
-        ..isAntiAlias = true
-        ..color = Colors.white;
     }
 
     if (chipShape == ChipShape.rect) {
