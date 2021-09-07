@@ -479,18 +479,18 @@ class _CropPainter extends CustomPainter {
         ..color = Colors.white
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke;
-    }
 
-    if (chipShape == ChipShape.rect) {
-      canvas.drawRRect(
-          RRect.fromLTRBR(boundaries.left - 1, boundaries.top - 1, boundaries.right + 1, boundaries.bottom + 1,
-              Radius.circular(areaRadius!)),
-          paint);
-    } else {
-      canvas.drawRRect(
-          RRect.fromLTRBR(boundaries.left - 1, boundaries.top - 1, boundaries.right + 1, boundaries.bottom + 1,
-              Radius.circular(boundaries.height / 2)),
-          paint);
+      if (chipShape == ChipShape.rect) {
+        canvas.drawRRect(
+            RRect.fromLTRBR(boundaries.left - 1, boundaries.top - 1, boundaries.right + 1, boundaries.bottom + 1,
+                Radius.circular(areaRadius!)),
+            paint);
+      } else {
+        canvas.drawRRect(
+            RRect.fromLTRBR(boundaries.left - 1, boundaries.top - 1, boundaries.right + 1, boundaries.bottom + 1,
+                Radius.circular(boundaries.height / 2)),
+            paint);
+      }
     }
 
     canvas.restore();
