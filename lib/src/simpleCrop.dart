@@ -22,44 +22,51 @@ class ImgCrop extends StatefulWidget {
   final ChipShape chipShape;
   final double handleSize;
   final double areaRadius;
-  const ImgCrop(
-      {Key? key,
-      required this.image,
-      this.maximumScale: 2.0,
-      this.onImageError,
-      this.chipRadius = 150,
-      this.chipRatio = 1.0,
-      this.chipShape = ChipShape.circle,
-      this.areaRadius = 0,
-      this.handleSize = 10.0})
-      : assert(handleSize >= 0.0),
+  final bool showBorder;
+
+  const ImgCrop({
+    Key? key,
+    required this.image,
+    this.maximumScale: 2.0,
+    this.onImageError,
+    this.chipRadius = 150,
+    this.chipRatio = 1.0,
+    this.chipShape = ChipShape.circle,
+    this.areaRadius = 0,
+    this.handleSize = 10.0,
+    this.showBorder = false,
+  })  : assert(handleSize >= 0.0),
         super(key: key);
 
-  ImgCrop.file(File file,
-      {Key? key,
-      double scale = 1.0,
-      this.maximumScale: 2.0,
-      this.onImageError,
-      this.chipRadius = 150,
-      this.chipRatio = 1.0,
-      this.areaRadius = 0,
-      this.chipShape = ChipShape.circle,
-      this.handleSize = 10.0})
-      : image = FileImage(file, scale: scale),
+  ImgCrop.file(
+    File file, {
+    Key? key,
+    double scale = 1.0,
+    this.maximumScale: 2.0,
+    this.onImageError,
+    this.chipRadius = 150,
+    this.chipRatio = 1.0,
+    this.areaRadius = 0,
+    this.chipShape = ChipShape.circle,
+    this.handleSize = 10.0,
+    this.showBorder = false,
+  })  : image = FileImage(file, scale: scale),
         super(key: key);
 
-  ImgCrop.asset(String assetName,
-      {Key? key,
-      AssetBundle? bundle,
-      String? package,
-      this.chipRadius = 150,
-      this.maximumScale: 2.0,
-      this.onImageError,
-      this.areaRadius = 0,
-      this.chipRatio = 1.0,
-      this.chipShape = ChipShape.circle,
-      this.handleSize = 10.0})
-      : image = AssetImage(assetName, bundle: bundle, package: package),
+  ImgCrop.asset(
+    String assetName, {
+    Key? key,
+    AssetBundle? bundle,
+    String? package,
+    this.chipRadius = 150,
+    this.maximumScale: 2.0,
+    this.onImageError,
+    this.areaRadius = 0,
+    this.chipRatio = 1.0,
+    this.chipShape = ChipShape.circle,
+    this.handleSize = 10.0,
+    this.showBorder = false,
+  })  : image = AssetImage(assetName, bundle: bundle, package: package),
         super(key: key);
 
   @override
@@ -191,6 +198,7 @@ class ImgCropState extends State<ImgCrop> with TickerProviderStateMixin, Drag {
             chipShape: widget.chipShape,
             handleSize: widget.handleSize,
             areaRadius: widget.areaRadius,
+            showBorder: widget.showBorder,
           ),
         ),
       ),
@@ -375,17 +383,20 @@ class _CropPainter extends CustomPainter {
   final ChipShape? chipShape;
   final double? handleSize;
   final double? areaRadius;
+  final bool showBorder;
 
-  _CropPainter(
-      {this.image,
-      this.view,
-      this.ratio,
-      this.area,
-      this.scale,
-      this.active,
-      this.chipShape,
-      this.handleSize,
-      this.areaRadius});
+  _CropPainter({
+    this.image,
+    this.view,
+    this.ratio,
+    this.area,
+    this.scale,
+    this.active,
+    this.chipShape,
+    this.handleSize,
+    this.areaRadius,
+    this.showBorder = false,
+  });
 
   @override
   bool shouldRepaint(_CropPainter oldDelegate) {
@@ -461,11 +472,19 @@ class _CropPainter extends CustomPainter {
     }
     canvas.clipPath(Path.combine(PathOperation.difference, _path1, _path2)); //MARK: 合并路径，选择交叉选区
     canvas.drawRect(Rect.fromLTRB(0.0, 0.0, rect.width, rect.height), paint);
-    paint
-      ..isAntiAlias = true
-      ..color = Colors.white
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
+
+    if (showBorder) {
+      paint
+        ..isAntiAlias = true
+        ..color = Colors.white
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke;
+    } else {
+      paint
+        ..isAntiAlias = true
+        ..color = Colors.white;
+    }
+
     if (chipShape == ChipShape.rect) {
       canvas.drawRRect(
           RRect.fromLTRBR(boundaries.left - 1, boundaries.top - 1, boundaries.right + 1, boundaries.bottom + 1,
